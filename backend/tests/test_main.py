@@ -33,6 +33,24 @@ def test_delete_item() -> None:
     assert all(item["id"] != created["id"] for item in response.json())
 
 
+def test_stats_counts_items() -> None:
+    client.post("/api/items", json={"text": "milk"})
+    client.post("/api/items", json={"text": "bread"})
+
+    response = client.get("/api/items/stats")
+    assert response.status_code == 200
+    assert response.json() == {"count": 2, "total_characters": 9}
+
+
+def test_stats_counts_items() -> None:
+    client.post("/api/items", json={"text": "milk"})
+    client.post("/api/items", json={"text": "bread"})
+
+    response = client.get("/api/items/stats")
+    assert response.status_code == 200
+    assert response.json() == {"count": 2, "total_characters": 9}
+
+
 def test_get_specific_item_failed() -> None:
     response = client.get("/api/items/999999")
     assert response.status_code == 404
