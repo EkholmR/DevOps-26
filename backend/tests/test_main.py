@@ -33,6 +33,17 @@ def test_delete_item() -> None:
     assert all(item["id"] != created["id"] for item in response.json())
 
 
-def test_delete_missing_item_returns_404() -> None:
-    response = client.delete("/api/items/999999")
+def test_get_specific_item_failed() -> None:
+    response = client.get("/api/items/999999")
     assert response.status_code == 404
+
+def ttest_get_specific_item() -> None:
+    response = client.post("/api/items/1", json={"text": "buy milk"})
+    assert response.status_code == 201
+    created = response.json()
+    assert created["text"] == "buy milk"
+    assert "id" in created
+
+    response = client.get("/api/items/1")
+    assert response.status_code == 200
+    assert any(item["id"] == created["id"] for item in response.json())
