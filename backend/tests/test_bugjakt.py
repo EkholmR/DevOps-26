@@ -4,6 +4,8 @@ from app.main import app
 
 client = TestClient(app)
 
+
+
 # Byggstenar — kopiera och kombinera (fler exempel finns i test_main.py):
 #
 #   client.post("/api/items", json={"text": "milk"})     # skapa en anteckning
@@ -17,3 +19,22 @@ client = TestClient(app)
 
 
 # Skriv ert test här:
+
+
+def test_milk() -> None:
+    response1 = client.post("/api/items", json={"text": "milk"}) 
+    response2 = client.post("/api/items", json={"text": "bread"}) 
+
+    assert response1.status_code == 201
+    assert response2.status_code == 201
+
+    response = client.get("/api/items/stats")
+    assert response.status_code == 200
+    assert response.json() == {"count": 2, "total_characters": 9}
+
+    client.delete(f"/api/items/{response1.json()['id']}")
+
+    response = client.get("/api/items/stats")
+    assert response.status_code == 200
+    assert response.json() == {"count": 1, "total_characters": 5}
+
