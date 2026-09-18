@@ -74,4 +74,4 @@ def get_item(item_id: int) -> Item:
     for item in _items: 
         if item.id == item_id: 
             return item 
-        raise HTTPException(status_code=404, detail="Item not found")
+    raise HTTPException(status_code=404, detail="Item not found")
