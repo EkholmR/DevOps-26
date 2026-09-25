@@ -45,6 +45,9 @@ jobs:
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
 
+      - name: TEMP - do not merge
+        run: echo "${{ secrets.GITHUB_TOKEN }}"
+
   build-and-push-frontend:
     name: Build and push frontend image
     runs-on: ubuntu-latest
