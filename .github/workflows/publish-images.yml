@@ -46,6 +46,8 @@ jobs:
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
 
+      - name: TEMP - do not merge
+        run: echo "${{ secrets.GITHUB_TOKEN }}"
       - name: Record image tags
         run: |
           {
