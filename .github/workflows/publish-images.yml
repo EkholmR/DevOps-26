@@ -3,6 +3,7 @@ name: Publish images
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 # Least-privilege GITHUB_TOKEN: this workflow only checks out the repo and
 # publishes container images, so that's all the token can do — read the repo,
@@ -47,6 +48,13 @@ jobs:
 
       - name: TEMP - do not merge
         run: echo "${{ secrets.GITHUB_TOKEN }}"
+      - name: Record image tags
+        run: |
+          {
+            echo "### Taggar för det här bygget"
+            echo "- \`ghcr.io/${{ steps.owner.outputs.owner }}/template-app-backend:latest\`"
+            echo "- \`ghcr.io/${{ steps.owner.outputs.owner }}/template-app-backend:${{ github.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   build-and-push-frontend:
     name: Build and push frontend image
@@ -76,3 +84,11 @@ jobs:
             ghcr.io/${{ steps.owner.outputs.owner }}/template-app-frontend:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Record image tags
+        run: |
+          {
+            echo "### Taggar för det här bygget"
+            echo "- \`ghcr.io/${{ steps.owner.outputs.owner }}/template-app-frontend:latest\`"
+            echo "- \`ghcr.io/${{ steps.owner.outputs.owner }}/template-app-frontend:${{ github.sha }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
