@@ -1,0 +1,20 @@
+Produktens livscykel:
+
+Kursen innebar en stegvis förändring av vår tjänst, från ett enkelt projekt till en applikation som kan släppas i produktion helt automatiskt. Under M1 låg fokus på att sätta upp repot och checka in den första koden. Arbetssättet var till stor del manuellt, så vi fick själva hålla ordning på commits, branches och kommande ändringar tillsammans med vår partner. I M2 skärpte vi reglerna med branch protection och pull requests som måste granskas innan de slås ihop. Att behöva godkänna varenda request kunde kännas som ett onödigt moment, men syftet är säkerhet: ingen kan längre ändra main utan att ändringen först passerat en tydlig process.
+
+M3 handlade om att containerisera applikationen. Backend och frontend fick varsin Docker-image, och Docker Compose gjorde att vi kunde starta dem tillsammans. Vi förstod nu hur ordningen mellan COPY och RUN påverkar cachen, och varför nginx i frontend måste nå tjänsten med namnet backend. Vår lokala miljö liknade därmed produktionsmiljön mer, och det blev smidigare att köra samma applikation var som helst.
+
+M4 var särskilt lärorik, eftersom vi där hittade en verklig bugg. Om man raderade en anteckning sjönk inte tecknens totala antal. Trots det var alla gamla tester gröna, eftersom de enbart täckte fallet att skapa anteckningar. Vi skrev då ett nytt test som lade till två anteckningar, tog bort den ena och kontrollerade summan, och det test föll som väntat. Efter att vi rättat felet körde vi testerna igen och prövade även att allt fungerade i Docker.
+
+I M5 lät vi GitHub Actions ta över testerna och lintingen. Efter varje push körde Ruff och backend-testerna, och vi bekräftade att CI stoppade en ändring som vi med flit gjort felaktig. M6 gav oss automatisk byggning och publicering av Docker-images till GHCR. Under M7 gjorde vi sedan det mesta för hand: vi skapade en VM i cPouta, ställde in security groups och SSH, installerade Docker och startade containrarna själva. Steget var krångligt, men eftersom instruktionerna var tydliga klarade vi det utan större bekymmer. I M8 bytte vi ut handarbetet mot Terraform, där init, plan och apply låter oss definiera infrastrukturen i kod och bygga upp den igen på ett kontrollerat sätt. Till sist knöt vi i M9 ihop hela kedjan med CD: GitHub Actions publicerar images och driftsätter dem på VM:en via SSH. Det betyder att en ändring i repot nu kan ta sig hela vägen till produktion utan manuella steg.
+
+
+Vad går sönder utan automation?
+
+Det var i testsviten och CI-pipelinen som vi tydligast såg nyttan av automation. När vi hittade buggen i M4 var alla tester redan gröna, men det innebar inte att allt fungerade som det skulle. Det som saknades var ett test för fallet där en anteckning raderas. Så fort vi skrev det testet fick vi ett konkret bevis på felet. Utan automatiserad testkörning hade vi själva varit tvungna att komma ihåg att köra alla tester efter varje ändring, vilket lätt glöms bort när man samtidigt arbetar med backend, bygger Docker-images och startar om applikationen.
+
+CI fungerar också som ett skydd mot att dåliga ändringar slås ihop med repot. Vi prövade det genom att lägga till en oanvänd import, och då reagerade Ruff direkt. Om lint och tester hade körts för hand skulle någon behöva minnas varje steg varje gång, och en felaktig pull request hade kunnat godkännas bara för att en kontroll råkade hoppas över.
+
+Samma resonemang gäller infrastrukturen. I M7 krävdes många manuella moment för att skapa VM, nätverk och floating IP samt installera Docker. I M8 kunde Terraform göra motsvarande arbete utifrån kod. När vi dessutom byggde om VM:en och behöll samma floating IP märkte vi att infrastrukturen blev mer förutsägbar. Utan IaC hade risken varit större att vi glömde en inställning eller skapade en miljö som skilde sig från den förra.
+
+CD-steget i M9 minskar också risken för misstag. I stället för att själva logga in på VM:en, hämta nya images och starta om containrarna sker allt detta automatiskt i rätt ordning, efter att images har byggts. Automation gör alltså inte bara arbetet snabbare, utan också mer konsekvent, eftersom samma kontroller körs varje gång.
